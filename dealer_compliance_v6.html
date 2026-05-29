@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBS Dealer Compliance Dashboard v6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2230;
+  --surface: #1e2533;
+  --surface2: #252d3d;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --accent: #58a6ff;
+  --accent2: #1f6feb;
+  --green: #3fb950;
+  --green-bg: rgba(63,185,80,0.12);
+  --green-dim: rgba(63,185,80,0.6);
+  --red: #f85149;
+  --red-bg: rgba(248,81,73,0.12);
+  --amber: #d29922;
+  --amber-bg: rgba(210,153,34,0.12);
+  --purple: #a371f7;
+  --purple-bg: rgba(163,113,247,0.12);
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
+  --glow-green: 0 0 20px rgba(63,185,80,0.25);
+  --glow-red: 0 0 20px rgba(248,81,73,0.25);
+  --glow-accent: 0 0 20px rgba(88,166,255,0.2);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;overflow-x:hidden;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;backdrop-filter:blur(12px);}
+.logo{font-size:15px;font-weight:800;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;}
+.logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;letter-spacing:-1px;flex-shrink:0;}
+.logo-text{color:var(--text);}
+.logo-text span{color:var(--accent);}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.18s;font-family:inherit;white-space:nowrap;}
+.btn:hover{background:var(--surface2);border-color:rgba(255,255,255,0.2);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-primary{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+.btn-primary:hover{background:var(--accent);border-color:var(--accent);}
+.btn-green{background:rgba(63,185,80,0.15);color:var(--green);border-color:rgba(63,185,80,0.3);}
+.btn-green:hover{background:rgba(63,185,80,0.25);}
+.btn-red{background:var(--red-bg);color:var(--red);border-color:rgba(248,81,73,0.3);}
+.btn-red:hover{background:rgba(248,81,73,0.2);}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--text2);}
+.btn-ghost:hover{background:var(--surface);color:var(--text);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-full{width:100%;padding:13px;font-size:14px;font-weight:600;}
+.btn-icon{width:32px;height:32px;padding:0;border-radius:7px;}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border-color:rgba(210,153,34,0.3);}
+
+/* ── INPUTS ── */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.8px;}
+input[type=text],input[type=password],input[type=date],select,textarea{
+  width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:var(--radius-sm);
+  font-size:13.5px;font-family:inherit;background:var(--bg3);color:var(--text);transition:all 0.18s;line-height:1.5;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(88,166,255,0.15);}
+textarea{resize:vertical;min-height:72px;}
+select option{background:var(--bg3);}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.card-sm{padding:14px 16px;}
+.card-glow-green{box-shadow:var(--glow-green);}
+.card-glow-red{box-shadow:var(--glow-red);}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;letter-spacing:0.3px;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-blue{background:rgba(88,166,255,0.12);color:var(--accent);}
+.badge-gray{background:rgba(255,255,255,0.06);color:var(--text2);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+.badge-admin{background:linear-gradient(135deg,rgba(163,113,247,0.2),rgba(88,166,255,0.2));color:var(--accent);border:1px solid rgba(88,166,255,0.2);}
+
+/* ── METRICS ROW ── */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px;}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px 16px;position:relative;overflow:hidden;transition:all 0.2s;}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px;}
+.metric-green::before{background:linear-gradient(90deg,var(--green),transparent);}
+.metric-red::before{background:linear-gradient(90deg,var(--red),transparent);}
+.metric-amber::before{background:linear-gradient(90deg,var(--amber),transparent);}
+.metric-blue::before{background:linear-gradient(90deg,var(--accent),transparent);}
+.metric-purple::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.metric-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;}
+.metric-val{font-size:30px;font-weight:800;line-height:1;font-family:'DM Mono',monospace;}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:rgba(255,255,255,0.06);border-radius:99px;height:6px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
+
+/* ── STATUS SELECTORS ── */
+.status-selector{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0;}
+.status-opt{flex:1;min-width:90px;padding:9px 10px;border:2px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg3);cursor:pointer;text-align:center;transition:all 0.15s;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--text2);}
+.status-opt:hover{border-color:rgba(255,255,255,0.2);}
+.status-opt.sel-done{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.status-opt.sel-partial{border-color:var(--amber);background:var(--amber-bg);color:var(--amber);}
+.status-opt.sel-notdone{border-color:var(--red);background:var(--red-bg);color:var(--red);}
+
+/* ── TASK ITEMS ── */
+.task-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;background:var(--surface);transition:all 0.2s;}
+.task-item.t-done{border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.04);}
+.task-item.t-partial{border-color:rgba(210,153,34,0.3);background:rgba(210,153,34,0.04);}
+.task-item.t-notdone{border-color:rgba(248,81,73,0.3);background:rgba(248,81,73,0.04);}
+.task-header{display:flex;align-items:flex-start;gap:10px;}
+.task-num{font-size:11px;font-weight:700;color:var(--text3);min-width:22px;padding-top:1px;font-family:'DM Mono',monospace;}
+.task-name{font-size:13.5px;font-weight:500;flex:1;}
+.task-body{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.reason-field{margin-top:8px;}
+.reason-field textarea{min-height:60px;font-size:13px;}
+
+/* ── ADMIN TASK MANAGER ── */
+.task-row-admin{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--bg3);}
+.task-row-admin input{flex:1;border:none;background:transparent;font-size:13.5px;font-family:inherit;color:var(--text);padding:0;}
+.task-row-admin input:focus{outline:none;}
+.drag-handle{color:var(--text3);cursor:grab;font-size:16px;user-select:none;}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap;}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:rgba(255,255,255,0.02);}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:22px;}
+.tab{padding:11px 18px;border:none;background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;transition:all 0.15s;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab:hover:not(.active){color:var(--text);}
+
+/* ── FILTER PILLS ── */
+.filter-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.pill{padding:5px 13px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;}
+.pill:hover{background:var(--surface2);}
+.pill.active{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+
+/* ── DEALER GRID ── */
+.dealer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.dealer-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 14px;cursor:pointer;transition:all 0.2s;text-align:center;position:relative;overflow:hidden;}
+.dealer-tile::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,0.02));pointer-events:none;}
+.dealer-tile:hover{border-color:rgba(88,166,255,0.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3),var(--glow-accent);}
+.dealer-tile .dt-icon{font-size:26px;margin-bottom:8px;}
+.dealer-tile .dt-name{font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.dealer-tile .dt-score{font-size:24px;font-weight:800;margin-bottom:8px;font-family:'DM Mono',monospace;}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-md);}
+.modal-lg{max-width:680px;}
+.modal-header{padding:20px 22px 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg2);z-index:1;border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:0;}
+.modal-body{padding:18px 22px 22px;}
+
+/* ── MISC ── */
+.section-title{font-size:18px;font-weight:800;margin-bottom:4px;letter-spacing:-0.4px;}
+.section-sub{font-size:13px;color:var(--text2);margin-bottom:18px;}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.info-box{border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;margin-bottom:14px;}
+.info-blue{background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.2);color:#79c0ff;}
+.info-amber{background:var(--amber-bg);border:1px solid rgba(210,153,34,0.3);color:#e3b341;}
+.info-green{background:var(--green-bg);border:1px solid rgba(63,185,80,0.3);color:#56d364;}
+.info-red{background:var(--red-bg);border:1px solid rgba(248,81,73,0.3);color:#ff7b72;}
+code{background:rgba(255,255,255,0.06);padding:1px 7px;border-radius:4px;font-size:12px;font-family:'DM Mono',monospace;color:var(--accent);}
+
+/* ── SETUP ── */
+.setup-screen{max-width:580px;margin:60px auto;padding:0 16px;}
+.setup-step{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:2px;}
+.step-body{flex:1;}
+.step-title{font-size:13.5px;font-weight:700;margin-bottom:4px;}
+.step-desc{font-size:12.5px;color:var(--text2);line-height:1.6;}
+
+/* ── CONTAINER ── */
+.container{max-width:720px;margin:0 auto;padding:24px 16px;}
+.container-wide{max-width:1080px;margin:0 auto;padding:24px 16px;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);color:var(--text);padding:12px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all 0.25s;pointer-events:none;white-space:nowrap;border:1px solid var(--border2);box-shadow:var(--shadow-md);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.success{background:rgba(63,185,80,0.15);color:var(--green);border-color:rgba(63,185,80,0.3);}
+#toast.error{background:var(--red-bg);color:var(--red);border-color:rgba(248,81,73,0.3);}
+
+/* ── SPINNER ── */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── DEALER DETAIL ── */
+.detail-task-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.detail-task-row:last-child{border-bottom:none;}
+.detail-status-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+
+/* ── ADMIN SIDEBAR LAYOUT ── */
+.admin-layout{display:flex;min-height:calc(100vh - 60px);}
+.admin-sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;gap:4px;}
+.admin-content{flex:1;overflow:auto;padding:28px 32px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);transition:all 0.15s;border:none;background:none;font-family:inherit;width:100%;text-align:left;}
+.nav-item:hover{background:var(--surface);color:var(--text);}
+.nav-item.active{background:rgba(88,166,255,0.12);color:var(--accent);}
+.nav-item .nav-icon{font-size:15px;width:20px;text-align:center;}
+.nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:14px 12px 4px;margin-top:6px;}
+
+/* ── MINI BARS ── */
+.mini-bar-wrap{display:flex;gap:3px;align-items:flex-end;height:28px;}
+.mini-bar{width:8px;border-radius:3px 3px 0 0;min-height:4px;transition:all 0.3s;}
+
+/* ── STAT CARD ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;}
+.stat-card-icon{font-size:28px;margin-bottom:10px;}
+.stat-card-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;}
+.stat-card-val{font-size:34px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;}
+.stat-card-sub{font-size:12px;color:var(--text2);margin-top:6px;}
+.stat-card-accent{position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 var(--radius) 0 60px;opacity:0.1;}
+
+/* ── SCORE RING ── */
+.score-ring-wrap{display:flex;align-items:center;gap:14px;}
+.score-ring-text{font-size:14px;font-weight:700;}
+.score-ring-sub{font-size:11px;color:var(--text2);}
+
+/* ── DEALER MGMT ── */
+.dealer-list-admin{margin-top:10px;max-height:400px;overflow-y:auto;}
+.dealer-row-admin{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--bg3);transition:all 0.15s;}
+.dealer-row-admin:hover{border-color:var(--border2);}
+.dealer-row-admin .dealer-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.dealer-row-admin input{flex:1;border:none;background:transparent;font-size:13.5px;font-family:inherit;color:var(--text);padding:0;}
+.dealer-row-admin input:focus{outline:none;}
+
+/* ── ASSIGN TASK MODAL ── */
+.assign-task-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--bg3);cursor:pointer;transition:all 0.15s;}
+.assign-task-item:hover{border-color:var(--border2);}
+.assign-task-item.assigned{border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.05);}
+.assign-checkbox{width:18px;height:18px;border-radius:4px;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;}
+.assign-task-item.assigned .assign-checkbox{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* ── CHART ── */
+.chart-container{width:100%;height:160px;position:relative;margin-top:12px;}
+.chart-bar-row{display:flex;align-items:flex-end;gap:4px;height:100%;}
+.chart-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);cursor:default;position:relative;}
+.chart-bar:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--text);font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;border:1px solid var(--border2);pointer-events:none;}
+.chart-label-row{display:flex;gap:4px;margin-top:5px;}
+.chart-label{flex:1;text-align:center;font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── SUBMISSIONS OVERVIEW ── */
+.submission-progress-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.submission-progress-row .name{width:80px;font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.submission-progress-row .bar-wrap{flex:1;}
+.submission-progress-row .score-num{width:38px;text-align:right;font-size:12px;font-weight:700;font-family:'DM Mono',monospace;}
+
+@media (max-width:768px){
+  .admin-layout{flex-direction:column;}
+  .admin-sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:8px 12px;gap:2px;}
+  .nav-section{display:none;}
+  .admin-content{padding:16px;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .dealer-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:500px){
+  .metrics{grid-template-columns:1fr 1fr;}
+  .topbar{padding:0 14px;}
+  .container,.container-wide{padding:16px 12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP PAGE ══ -->
+<div id="page-setup" class="page active">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">NB</div><div class="logo-text">NBS <span>Compliance</span></div></div>
+  </div>
+  <div class="setup-screen">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,var(--accent2),var(--purple));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;">⚙️</div>
+      <div class="section-title">Initial Setup</div>
+      <div class="section-sub">Connect to GitHub and create your admin password</div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text2);">Step-by-step instructions</div>
+      <div class="setup-step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Create a private GitHub repo</div><div class="step-desc">Go to <a href="https://github.com/new" target="_blank" style="color:var(--accent);">github.com/new</a> → name it (e.g. <code>nbs-compliance-data</code>) → set to <b>Private</b> → Create repository.</div></div></div>
+      <div class="setup-step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Create a Personal Access Token</div><div class="step-desc">Go to <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--accent);">GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)</a> → Generate new token → Select scope: <b>repo</b> (full control) → Generate. Copy the token — it won't be shown again.</div></div></div>
+      <div class="setup-step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Enter details below</div><div class="step-desc">Paste your GitHub username, repo name, and token. Data will be saved as JSON files in the repo, one file per dealer per day.</div></div></div>
+    </div>
+    <div class="card">
+      <div class="field"><label>GitHub Username</label><input type="text" id="setup-gh-user" placeholder="e.g. devname"></div>
+      <div class="field"><label>Repository Name</label><input type="text" id="setup-gh-repo" placeholder="e.g. nbs-compliance-data"></div>
+      <div class="field"><label>Personal Access Token</label><input type="password" id="setup-gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"></div>
+      <div class="field"><label>Admin Password</label><input type="password" id="setup-admin-pass" placeholder="Set a strong password for admin access"></div>
+      <div class="field" style="margin-bottom:0;"><label>Confirm Password</label><input type="password" id="setup-admin-pass2" placeholder="Re-enter password"><div id="setup-error" style="font-size:12px;color:var(--red);margin-top:6px;display:none;"></div></div>
+      <hr class="divider">
+      <button class="btn btn-primary btn-full" id="setup-btn" onclick="saveSetup()">Save & Launch Dashboard →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HOME PAGE ══ -->
+<div id="page-home" class="page">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">NB</div><div class="logo-text">NBS <span>Compliance</span></div></div>
+    <div class="topbar-right">
+      <span id="home-date-badge" class="badge badge-blue" style="font-size:12px;padding:5px 12px;"></span>
+      <button class="btn btn-sm" onclick="goTo('page-admin-login')">🔒 Admin</button>
+    </div>
+  </div>
+  <div class="container" style="padding-top:40px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:36px;margin-bottom:10px;">👤</div>
+      <div class="section-title">Good <span id="greeting-time"></span> 👋</div>
+      <div class="section-sub">Select your name and enter your password to continue</div>
+    </div>
+    <div class="card" style="max-width:400px;margin:0 auto;">
+      <div class="field">
+        <label>Select Your Name</label>
+        <select id="dealer-select" onchange="onDealerSelectChange()">
+          <option value="">— Choose dealer —</option>
+        </select>
+      </div>
+      <div class="field" id="dealer-pass-field" style="display:none;">
+        <label>Your Password</label>
+        <input type="password" id="dealer-pass-input" placeholder="Enter your password" onkeydown="if(event.key==='Enter')dealerLogin()">
+        <div id="dealer-login-err" style="font-size:12px;color:var(--red);margin-top:6px;display:none;">Incorrect password. Try again.</div>
+      </div>
+      <div id="dealer-no-pass-warn" class="info-box info-amber" style="display:none;margin-bottom:0;">⚠️ No password set for this dealer. Ask admin to set one.</div>
+      <button class="btn btn-primary btn-full" id="dealer-login-btn" onclick="dealerLogin()" style="display:none;margin-top:4px;">Open My Checklist →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DEALER CHECKLIST ══ -->
+<div id="page-dealer" class="page">
+  <div class="topbar">
+    <button class="btn btn-ghost btn-sm" onclick="dealerLogout()">← Logout</button>
+    <div>
+      <div class="logo-text" id="dealer-topbar-name" style="font-weight:800;font-size:15px;"></div>
+      <div style="font-size:11px;color:var(--text3);" id="dealer-topbar-date"></div>
+    </div>
+    <div class="topbar-right">
+      <span id="dealer-score-badge" style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace;color:var(--accent);"></span>
+    </div>
+  </div>
+  <div class="container">
+    <div id="dealer-resubmit-notice" class="info-box info-amber" style="display:none;">⚠️ You already submitted today. Submitting again will overwrite your previous entry.</div>
+    <div class="card card-sm" style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;">Today's Progress</span>
+        <span id="dealer-count-txt" style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;"></span>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="dealer-progress-bar" style="width:0%;background:var(--green);"></div></div>
+    </div>
+    <div id="dealer-task-list"></div>
+    <button class="btn btn-green btn-full" id="dealer-submit-btn" onclick="submitChecklist()" style="margin-top:6px;">✓ Submit Compliance Checklist</button>
+    <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--text3);">All responses are saved to GitHub</div>
+  </div>
+</div>
+
+<!-- ══ SUBMITTED PAGE ══ -->
+<div id="page-submitted" class="page">
+  <div class="topbar">
+    <button class="btn btn-ghost btn-sm" onclick="goTo('page-home')">← Home</button>
+    <div class="logo-text" style="font-weight:800;">Submitted ✓</div>
+  </div>
+  <div class="container" style="text-align:center;padding-top:40px;">
+    <div style="width:72px;height:72px;background:var(--green-bg);border:2px solid rgba(63,185,80,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;box-shadow:var(--glow-green);">✓</div>
+    <div class="section-title">Checklist Submitted</div>
+    <div class="section-sub" id="sub-info"></div>
+    <div class="metrics" style="margin-top:20px;text-align:left;">
+      <div class="metric metric-green"><div class="metric-label">Done</div><div class="metric-val" id="sub-done" style="color:var(--green);"></div></div>
+      <div class="metric metric-amber"><div class="metric-label">Partial</div><div class="metric-val" id="sub-partial" style="color:var(--amber);"></div></div>
+      <div class="metric metric-red"><div class="metric-label">Not Done</div><div class="metric-val" id="sub-notdone" style="color:var(--red);"></div></div>
+      <div class="metric metric-blue"><div class="metric-label">Score</div><div class="metric-val" id="sub-score" style="color:var(--accent);"></div></div>
+    </div>
+    <div id="sub-saving" class="info-box info-blue" style="margin-top:16px;display:none;">⏳ Saving to GitHub...</div>
+    <div id="sub-saved" class="info-box info-green" style="margin-top:16px;display:none;">✅ Saved to GitHub successfully.</div>
+    <div id="sub-save-err" class="info-box info-red" style="margin-top:16px;display:none;"></div>
+    <button class="btn btn-primary" style="margin-top:20px;" onclick="goTo('page-home')">← Back to Home</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN LOGIN ══ -->
+<div id="page-admin-login" class="page">
+  <div class="topbar">
+    <button class="btn btn-ghost btn-sm" onclick="goTo('page-home')">← Back</button>
+    <div class="logo-text" style="font-weight:800;">Admin Access</div>
+  </div>
+  <div class="container" style="padding-top:48px;">
+    <div class="card" style="max-width:380px;margin:0 auto;text-align:center;">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,rgba(163,113,247,0.2),rgba(88,166,255,0.2));border:1px solid rgba(88,166,255,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;">🔐</div>
+      <div class="section-title">Admin Dashboard</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">Enter password to access full controls</div>
+      <div class="field" style="text-align:left;">
+        <label>Password</label>
+        <input type="password" id="admin-pass-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+        <div id="admin-login-err" style="font-size:12px;color:var(--red);margin-top:6px;display:none;">Incorrect password. Try again.</div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doAdminLogin()">Login →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN DASHBOARD ══ -->
+<div id="page-admin" class="page">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">NB</div><div class="logo-text">NBS <span>Admin</span></div></div>
+    <div class="topbar-right">
+      <span class="badge badge-admin">👑 Admin</span>
+      <button class="btn btn-red btn-sm" onclick="logoutAdmin()">Logout</button>
+    </div>
+  </div>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <div class="nav-section">Overview</div>
+      <button class="nav-item active" id="nav-dashboard" onclick="showAdminSection('dashboard',this)"><span class="nav-icon">📊</span> Dashboard</button>
+      <button class="nav-item" id="nav-today" onclick="showAdminSection('today',this)"><span class="nav-icon">📋</span> Today's Report</button>
+      <button class="nav-item" id="nav-history" onclick="showAdminSection('history',this)"><span class="nav-icon">🕓</span> History</button>
+      <div class="nav-section">Management</div>
+      <button class="nav-item" id="nav-dealers" onclick="showAdminSection('dealers',this)"><span class="nav-icon">👥</span> Dealers</button>
+      <button class="nav-item" id="nav-tasks" onclick="showAdminSection('tasks',this)"><span class="nav-icon">✅</span> Task Manager</button>
+      <button class="nav-item" id="nav-settings" onclick="showAdminSection('settings',this)"><span class="nav-icon">⚙️</span> Settings</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+
+      <!-- SECTION: DASHBOARD -->
+      <div id="section-dashboard">
+        <div class="section-title" style="margin-bottom:16px;">Dashboard — Today's Overview <span id="admin-today-badge" class="badge badge-blue" style="font-size:11px;margin-left:8px;"></span></div>
+        <div class="stat-grid" id="admin-stat-grid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;" id="dashboard-charts-row">
+          <div class="card">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Today's Submissions</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Score per dealer</div>
+            <div class="chart-container" id="chart-today"></div>
+          </div>
+          <div class="card">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">Compliance Breakdown</div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Done · Partial · Not Done</div>
+            <div id="breakdown-bars" style="margin-top:8px;"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Today's Submission Progress</div>
+          <div id="dealer-progress-list"></div>
+        </div>
+      </div>
+
+      <!-- SECTION: TODAY -->
+      <div id="section-today" style="display:none;">
+        <div class="section-title" style="margin-bottom:16px;">Today's Report</div>
+        <div class="metrics" id="admin-metrics"></div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+            <div class="section-title" style="margin-bottom:0;font-size:16px;flex:1;">Dealer Status</div>
+            <input type="text" id="admin-search-today" placeholder="Search dealer..." style="width:170px;font-size:13px;padding:7px 11px;" oninput="renderTodayTable()">
+          </div>
+          <div class="filter-pills" id="today-filter-pills">
+            <button class="pill active" data-filter="all" onclick="setTodayFilter(this)">All</button>
+            <button class="pill" data-filter="complete" onclick="setTodayFilter(this)">Complete</button>
+            <button class="pill" data-filter="partial" onclick="setTodayFilter(this)">Has Partial</button>
+            <button class="pill" data-filter="notdone" onclick="setTodayFilter(this)">Has Not Done</button>
+            <button class="pill" data-filter="pending" onclick="setTodayFilter(this)">Pending</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Dealer</th><th>Status</th><th>Done</th><th>Partial</th><th>Not Done</th><th>Score</th><th>Submitted At</th><th>Details</th><th>Delete</th></tr></thead>
+              <tbody id="today-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: HISTORY -->
+      <div id="section-history" style="display:none;">
+        <div class="section-title" style="margin-bottom:8px;">Submission History</div>
+        <div class="info-box info-blue" style="margin-bottom:16px;">📦 All past submissions are permanently archived on GitHub. The Dashboard only shows <strong>today's data</strong> and auto-refreshes at midnight. Use the date range below to query historical records from GitHub.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="date" id="hist-date-from" style="font-size:13px;padding:7px 11px;">
+              <span style="color:var(--text3);font-size:12px;">to</span>
+              <input type="date" id="hist-date-to" style="font-size:13px;padding:7px 11px;">
+              <select id="hist-dealer-filter" style="font-size:13px;padding:7px 11px;width:150px;" onchange="renderHistoryTable()"><option value="">All Dealers</option></select>
+              <button class="btn btn-primary btn-sm" onclick="reloadHistory()">🔄 Load Data</button>
+            </div>
+          </div>
+          <div id="hist-loading" style="text-align:center;padding:24px;color:var(--text3);display:none;"><span class="spinner"></span> <span style="margin-left:8px;">Fetching from GitHub...</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Dealer</th><th>Done</th><th>Partial</th><th>Not Done</th><th>Score</th><th>Submitted At</th><th>Details</th><th>Delete</th></tr></thead>
+              <tbody id="history-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: DEALERS MANAGEMENT -->
+      <div id="section-dealers" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div class="section-title" style="margin-bottom:0;flex:1;">Dealer Management</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddDealerModal()">+ Add Dealer</button>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:14px;">All Dealers <span id="dealer-count-badge" class="badge badge-blue" style="margin-left:6px;"></span></div>
+          <div id="dealer-management-list"></div>
+        </div>
+        <div class="card">
+          <div class="section-title" style="font-size:16px;margin-bottom:4px;">Dealer Performance</div>
+          <div class="section-sub">Average compliance scores across all submissions</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Dealer</th><th>Submissions</th><th>Avg Score</th><th>Last Active</th><th>Streak</th></tr></thead>
+              <tbody id="dealers-table-body"></tbody>
+            </table>
+          </div>
+          <div id="dealer-perf-loading" style="text-align:center;padding:24px;color:var(--text3);display:none;"><span class="spinner"></span></div>
+        </div>
+      </div>
+
+      <!-- SECTION: TASK MANAGER -->
+      <div id="section-tasks" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div class="section-title" style="margin-bottom:0;flex:1;">Task Manager</div>
+          <button class="btn btn-primary btn-sm" onclick="addNewTask()">+ Add Task</button>
+          <button class="btn btn-green btn-sm" onclick="saveTasksInline()">💾 Save Changes</button>
+        </div>
+        <div class="info-box info-blue" style="margin-bottom:16px;">Changes apply to all dealers from their next submission. Existing submissions are not affected.</div>
+        <div class="card">
+          <div id="task-manager-list-inline"></div>
+        </div>
+      </div>
+
+      <!-- SECTION: SETTINGS -->
+      <div id="section-settings" style="display:none;">
+        <div class="section-title" style="margin-bottom:20px;">Settings</div>
+        <div class="card" style="max-width:500px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Change Admin Password</div>
+          <div class="field"><label>Current Password</label><input type="password" id="set-cur-pass" placeholder="Enter current password"></div>
+          <div class="field"><label>New Password</label><input type="password" id="set-new-pass" placeholder="Enter new password"></div>
+          <div class="field" style="margin-bottom:0;"><label>Confirm New Password</label><input type="password" id="set-new-pass2" placeholder="Re-enter new password"><div id="set-pass-err" style="font-size:12px;color:var(--red);margin-top:6px;display:none;"></div></div>
+          <hr class="divider">
+          <button class="btn btn-primary" onclick="changeAdminPassword()">Update Password</button>
+        </div>
+        <div class="card" style="max-width:500px;margin-bottom:16px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:14px;">GitHub Configuration</div>
+          <div class="field"><label>GitHub Username</label><input type="text" id="set-gh-user" placeholder="e.g. devname"></div>
+          <div class="field"><label>Repository Name</label><input type="text" id="set-gh-repo" placeholder="e.g. nbs-compliance-data"></div>
+          <div class="field" style="margin-bottom:0;"><label>Personal Access Token</label><input type="password" id="set-gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"></div>
+          <hr class="divider">
+          <button class="btn btn-primary" onclick="updateGithubConfig()">Update GitHub Config</button>
+        </div>
+        <div class="card" style="max-width:500px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px;color:var(--red);">Danger Zone</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">These actions cannot be undone.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-red btn-sm" onclick="clearAllLocalData()">🗑️ Clear Local Submissions</button>
+            <button class="btn btn-red btn-sm" onclick="resetAll()">⚠️ Full Reset (Clears Config)</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end admin-content -->
+  </div><!-- end admin-layout -->
+</div>
+
+<!-- ══ MODAL: ADD DEALER ══ -->
+<div class="modal-overlay" id="modal-add-dealer">
+  <div class="modal">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700;">➕ Add New Dealer</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-add-dealer')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Dealer Name</label><input type="text" id="new-dealer-name" placeholder="Enter dealer name..."></div>
+      <div class="field"><label>Dealer Password</label><input type="password" id="new-dealer-pass" placeholder="Set a login password for this dealer"></div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Assign Custom Tasks (optional)</label>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Leave unchecked to use all global tasks.</div>
+        <div id="add-dealer-task-list"></div>
+      </div>
+      <hr class="divider">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmAddDealer()">Add Dealer</button>
+        <button class="btn" style="flex:1;" onclick="closeModal('modal-add-dealer')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: EDIT DEALER ══ -->
+<div class="modal-overlay" id="modal-edit-dealer">
+  <div class="modal">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700;">✏️ Edit Dealer</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-edit-dealer')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-dealer-original">
+      <div class="field"><label>Dealer Name</label><input type="text" id="edit-dealer-name" placeholder="Enter dealer name..."></div>
+      <div class="field">
+        <label>Change Password</label>
+        <input type="password" id="edit-dealer-pass" placeholder="Leave blank to keep current password">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="edit-dealer-pass-status"></div>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Custom Task Assignment</label>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">Select which tasks apply to this dealer. Uncheck all to use global tasks.</div>
+        <div id="edit-dealer-task-list"></div>
+      </div>
+      <hr class="divider">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmEditDealer()">Save Changes</button>
+        <button class="btn btn-red" onclick="confirmDeleteDealer()">Delete Dealer</button>
+        <button class="btn" onclick="closeModal('modal-edit-dealer')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: DETAIL VIEW ══ -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div style="font-size:16px;font-weight:700;" id="detail-modal-title"></div>
+        <div style="font-size:12px;color:var(--text2);" id="detail-modal-sub"></div>
+      </div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-modal-body"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// STATE & CONSTANTS
+// ══════════════════════════════════════════════════
+const STORAGE_KEY = 'nbs_compliance_config_v5';
+const SUBMISSIONS_KEY = 'nbs_compliance_subs_v5';
+
+const DEFAULT_TASKS = [
+  'Voice recording active',
+  'Client identity verified before trade',
+  'Margin checked before trade execution',
+  'Orders punched as per client instruction',
+  'No unauthorized trades executed',
+  'Client code verified before order entry',
+  'Suspicious trading activity reported',
+  'CCM requests documented properly',
+  'Terminal password secured',
+  'No use of personal mobile for orders',
+  'OMS/RMS connectivity verified',
+  'Pending orders reviewed',
+  'Trade confirmations verified',
+  'Dealer activity reconciled',
+  'Logged out from trading systems at EOD'
+];
+
+let cfg = null;
+let currentDealer = '';
+let dealerSession = ''; // name of currently logged-in dealer
+let taskStates = {};
+let allRemoteData = [];
+let historyLoaded = false;
+let todayFilterState = 'all';
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function todayDisplay(){ return new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+function shortDate(d){ try{ return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }catch{ return d; } }
+async function hashPass(pass){ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pass)); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function getConfig(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch{ return null; } }
+function saveConfig(c){ localStorage.setItem(STORAGE_KEY,JSON.stringify(c)); cfg=c; }
+function getLocalSubs(){ try{ return JSON.parse(localStorage.getItem(SUBMISSIONS_KEY)||'{}'); }catch{ return {}; } }
+function saveLocalSub(dealer,date,data){ const s=getLocalSubs(); s[dealer+'||'+date]=data; localStorage.setItem(SUBMISSIONS_KEY,JSON.stringify(s)); }
+function getLocalSub(dealer,date){ return getLocalSubs()[dealer+'||'+date]||null; }
+function greeting(){ const h=new Date().getHours(); if(h<12) return 'Morning'; if(h<17) return 'Afternoon'; return 'Evening'; }
+function toast(msg,type=''){ const t=document.getElementById('toast'); t.textContent=msg; t.className='show'+(type?' '+type:''); clearTimeout(t._to); t._to=setTimeout(()=>t.className='',2800); }
+function goTo(pageId){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); window.scrollTo(0,0); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function getDealers(){ return cfg&&cfg.dealers ? cfg.dealers : []; }
+function getDealerTasks(dealer){ if(cfg&&cfg.dealerTasks&&cfg.dealerTasks[dealer]&&cfg.dealerTasks[dealer].length>0) return cfg.dealerTasks[dealer]; return cfg?cfg.tasks:DEFAULT_TASKS; }
+function scoreColor(s){ return s>=80?'var(--green)':s>=50?'var(--amber)':'var(--red)'; }
+
+// ══════════════════════════════════════════════════
+// GITHUB API
+// ══════════════════════════════════════════════════
+function ghHeaders(){
+  return {
+    'Authorization': 'token '+cfg.ghToken,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
+  };
+}
+function ghBase(){ return 'https://api.github.com/repos/'+cfg.ghUser+'/'+cfg.ghRepo; }
+
+async function ghGetFile(path){
+  const r = await fetch(ghBase()+'/contents/'+path, {headers: ghHeaders()});
+  if(r.status===404) return null;
+  if(!r.ok) throw new Error('GitHub GET failed: '+r.status);
+  return await r.json();
+}
+
+async function ghPutFile(path, content, sha){
+  const body = {
+    message: 'compliance: '+path,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+  };
+  if(sha) body.sha = sha;
+  const r = await fetch(ghBase()+'/contents/'+path, {
+    method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body)
+  });
+  if(!r.ok){
+    const err = await r.json().catch(()=>({}));
+    throw new Error((err.message||'GitHub PUT failed')+' ('+r.status+')');
+  }
+  return await r.json();
+}
+
+async function ghDeleteFile(path, sha){
+  const body = { message: 'admin: delete '+path, sha };
+  const r = await fetch(ghBase()+'/contents/'+path, {
+    method: 'DELETE', headers: ghHeaders(), body: JSON.stringify(body)
+  });
+  if(!r.ok){ const err = await r.json().catch(()=>({})); throw new Error((err.message||'GitHub DELETE failed')+' ('+r.status+')'); }
+  return true;
+}
+
+async function ghListDir(path){
+  const r = await fetch(ghBase()+'/contents/'+path, {headers: ghHeaders()});
+  if(r.status===404) return [];
+  if(!r.ok) throw new Error('GitHub LIST failed: '+r.status);
+  return await r.json();
+}
+
+// Save one dealer's daily submission as submissions/YYYY-MM-DD/DealerName.json
+async function githubSubmit(payload){
+  const safeName = payload.dealer.replace(/[^a-zA-Z0-9_\- ]/g,'_');
+  const path = 'submissions/'+payload.date+'/'+safeName+'.json';
+  const existing = await ghGetFile(path);
+  await ghPutFile(path, payload, existing ? existing.sha : undefined);
+  return {success: true};
+}
+
+// Fetch all submissions for a date range by listing dirs then files
+async function githubFetchRange(fromDate, toDate){
+  // List top-level submissions/ dir to get all date folders
+  const dirs = await ghListDir('submissions');
+  if(!dirs.length) return [];
+  const dateDirs = dirs
+    .filter(d => d.type==='dir' && d.name >= fromDate && d.name <= toDate)
+    .map(d => d.name);
+
+  const allRows = [];
+  // Fetch each date folder in parallel (batch of 10 to avoid rate limits)
+  const batchSize = 10;
+  for(let i=0; i<dateDirs.length; i+=batchSize){
+    const batch = dateDirs.slice(i, i+batchSize);
+    const results = await Promise.all(batch.map(async date => {
+      try{
+        const files = await ghListDir('submissions/'+date);
+        const fileResults = await Promise.all(files.filter(f=>f.name.endsWith('.json')).map(async f => {
+          try{
+            const fileData = await ghGetFile('submissions/'+date+'/'+f.name);
+            if(!fileData) return [];
+            const decoded = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g,''))));
+            const sub = JSON.parse(decoded);
+            // Normalise to flat rows like old Google Sheet format
+            return (sub.tasks||[]).map(task=>({
+              Date: sub.date,
+              Dealer: sub.dealer,
+              Task: task.name,
+              Status: task.status,
+              Remark: task.remark||'',
+              Score: sub.score,
+              SubmittedAt: sub.submittedAt,
+              SubmissionId: sub.submissionId,
+              _sub: sub  // keep full sub for grouping
+            }));
+          }catch(e){ return []; }
+        }));
+        return fileResults.flat();
+      }catch(e){ return []; }
+    }));
+    allRows.push(...results.flat());
+  }
+  return allRows;
+}
+
+// ══════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════
+async function saveSetup(){
+  const ghUser = document.getElementById('setup-gh-user').value.trim();
+  const ghRepo = document.getElementById('setup-gh-repo').value.trim();
+  const ghToken = document.getElementById('setup-gh-token').value.trim();
+  const pass = document.getElementById('setup-admin-pass').value;
+  const pass2 = document.getElementById('setup-admin-pass2').value;
+  const errEl = document.getElementById('setup-error');
+  const btn = document.getElementById('setup-btn');
+  if(!ghUser||!ghRepo||!ghToken){ errEl.textContent='Please fill in all GitHub fields.'; errEl.style.display='block'; return; }
+  if(pass.length<4){ errEl.textContent='Password must be at least 4 characters.'; errEl.style.display='block'; return; }
+  if(pass!==pass2){ errEl.textContent='Passwords do not match.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Verifying GitHub...';
+  // Test token by checking repo access
+  try{
+    const r = await fetch('https://api.github.com/repos/'+ghUser+'/'+ghRepo, {
+      headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(r.status===404){ errEl.textContent='Repo not found. Check username and repo name.'; errEl.style.display='block'; btn.disabled=false; btn.innerHTML='Save & Launch Dashboard →'; return; }
+    if(r.status===401||r.status===403){ errEl.textContent='Token invalid or missing repo scope.'; errEl.style.display='block'; btn.disabled=false; btn.innerHTML='Save & Launch Dashboard →'; return; }
+    if(!r.ok){ errEl.textContent='GitHub error: '+r.status; errEl.style.display='block'; btn.disabled=false; btn.innerHTML='Save & Launch Dashboard →'; return; }
+  }catch(e){ errEl.textContent='Network error: '+e.message; errEl.style.display='block'; btn.disabled=false; btn.innerHTML='Save & Launch Dashboard →'; return; }
+
+  const hash = await hashPass(pass);
+  cfg = { ghUser, ghRepo, ghToken, adminPassHash: hash, tasks:[...DEFAULT_TASKS], dealers:['Dealer 1','Dealer 2','Dealer 3','Dealer 4','Dealer 5','Dealer 6','Dealer 7','Dealer 8','Dealer 9','Dealer 10'], dealerTasks:{}, dealerPassHashes:{} };
+  saveConfig(cfg);
+  btn.disabled=false; btn.innerHTML='Save & Launch Dashboard →';
+  toast('✅ Setup complete!','success');
+  initApp();
+}
+
+// ══════════════════════════════════════════════════
+// DAILY RESET — Dashboard shows only today's data
+// ══════════════════════════════════════════════════
+const LAST_ACTIVE_DATE_KEY = 'nbs_last_active_date';
+
+function checkDailyReset(){
+  const lastDate = localStorage.getItem(LAST_ACTIVE_DATE_KEY);
+  const today = todayStr();
+  if(lastDate && lastDate !== today){
+    // It's a new day — purge yesterday's local submissions from the view
+    // (they remain on GitHub; we just clear the local cache so dashboard is fresh)
+    const subs = getLocalSubs();
+    const purged = {};
+    // Keep only today's entries; past entries are already safe on GitHub
+    Object.keys(subs).forEach(k => {
+      const datePart = k.split('||')[1];
+      if(datePart === today) purged[k] = subs[k];
+      // past entries intentionally not kept in local cache after new day starts
+    });
+    localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(purged));
+    historyLoaded = false;
+    allRemoteData = [];
+    toast('🔄 Dashboard refreshed for ' + today + '. Past data is archived on GitHub.', 'success');
+  }
+  localStorage.setItem(LAST_ACTIVE_DATE_KEY, today);
+}
+
+function scheduleMidnightReset(){
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setDate(midnight.getDate()+1);
+  midnight.setHours(0,0,5,0); // 00:00:05 next day
+  const msUntilMidnight = midnight - now;
+  setTimeout(()=>{
+    checkDailyReset();
+    if(cfg) { renderAdminStats(); renderAdminMetrics(); renderTodayTable(); }
+    scheduleMidnightReset(); // reschedule for next midnight
+  }, msUntilMidnight);
+}
+
+// ══════════════════════════════════════════════════
+// HOME / DEALER LOGIN
+// ══════════════════════════════════════════════════
+function initApp(){
+  checkDailyReset();
+  scheduleMidnightReset();
+  cfg=getConfig();
+  document.getElementById('greeting-time').textContent=greeting();
+  document.getElementById('home-date-badge').textContent=todayDisplay();
+  populateDealerSelect();
+  goTo('page-home');
+}
+
+function populateDealerSelect(){
+  const sel=document.getElementById('dealer-select');
+  const dealers=getDealers();
+  sel.innerHTML='<option value="">— Choose dealer —</option>'+dealers.map(d=>`<option value="${d}">${d}</option>`).join('');
+  document.getElementById('dealer-pass-field').style.display='none';
+  document.getElementById('dealer-login-btn').style.display='none';
+  document.getElementById('dealer-no-pass-warn').style.display='none';
+  document.getElementById('dealer-login-err').style.display='none';
+  document.getElementById('dealer-pass-input').value='';
+}
+
+function onDealerSelectChange(){
+  const dealer=document.getElementById('dealer-select').value;
+  const passField=document.getElementById('dealer-pass-field');
+  const loginBtn=document.getElementById('dealer-login-btn');
+  const noPassWarn=document.getElementById('dealer-no-pass-warn');
+  const errEl=document.getElementById('dealer-login-err');
+  errEl.style.display='none';
+  document.getElementById('dealer-pass-input').value='';
+  if(!dealer){ passField.style.display='none'; loginBtn.style.display='none'; noPassWarn.style.display='none'; return; }
+  const passHashes=cfg.dealerPassHashes||{};
+  if(!passHashes[dealer]){ passField.style.display='none'; loginBtn.style.display='none'; noPassWarn.style.display='block'; return; }
+  noPassWarn.style.display='none';
+  passField.style.display='block';
+  loginBtn.style.display='block';
+  setTimeout(()=>document.getElementById('dealer-pass-input').focus(),50);
+}
+
+async function dealerLogin(){
+  const dealer=document.getElementById('dealer-select').value;
+  const pass=document.getElementById('dealer-pass-input').value;
+  const errEl=document.getElementById('dealer-login-err');
+  if(!dealer){ toast('⚠️ Select your name first.','error'); return; }
+  if(!pass){ errEl.textContent='Please enter your password.'; errEl.style.display='block'; return; }
+  const passHashes=cfg.dealerPassHashes||{};
+  const hash=await hashPass(pass);
+  if(hash!==passHashes[dealer]){ errEl.textContent='Incorrect password. Try again.'; errEl.style.display='block'; document.getElementById('dealer-pass-input').value=''; return; }
+  errEl.style.display='none';
+  dealerSession=dealer;
+  openDealer(dealer);
+}
+
+function dealerLogout(){
+  dealerSession='';
+  document.getElementById('dealer-pass-input').value='';
+  document.getElementById('dealer-select').value='';
+  populateDealerSelect();
+  goTo('page-home');
+}
+
+// ══════════════════════════════════════════════════
+// DEALER CHECKLIST
+// ══════════════════════════════════════════════════
+function openDealer(dealer){
+  currentDealer=dealer;
+  const existing=getLocalSub(dealer,todayStr());
+  taskStates={};
+  if(existing) existing.tasks.forEach((t,i)=>{ taskStates[i]={status:t.status,remark:t.remark||''}; });
+  document.getElementById('dealer-topbar-name').textContent=dealer;
+  document.getElementById('dealer-topbar-date').textContent=todayDisplay();
+  document.getElementById('dealer-resubmit-notice').style.display=existing?'block':'none';
+  renderDealerTasks(); updateDealerProgress(); goTo('page-dealer');
+}
+
+function renderDealerTasks(){
+  const tasks=getDealerTasks(currentDealer);
+  const container=document.getElementById('dealer-task-list');
+  container.innerHTML=tasks.map((task,i)=>{
+    const st=taskStates[i]||{status:'',remark:''};
+    const needsReason=st.status==='partial'||st.status==='notdone';
+    const itemClass=st.status==='done'?'t-done':st.status==='partial'?'t-partial':st.status==='notdone'?'t-notdone':'';
+    return `<div class="task-item ${itemClass}" id="task-item-${i}">
+      <div class="task-header">
+        <span class="task-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="task-name">${task}</span>
+      </div>
+      <div class="task-body">
+        <div class="status-selector">
+          <button class="status-opt ${st.status==='done'?'sel-done':''}" onclick="setStatus(${i},'done')">✅ Done</button>
+          <button class="status-opt ${st.status==='partial'?'sel-partial':''}" onclick="setStatus(${i},'partial')">🟡 Partial</button>
+          <button class="status-opt ${st.status==='notdone'?'sel-notdone':''}" onclick="setStatus(${i},'notdone')">❌ Not Done</button>
+        </div>
+        ${st.status==='done'?`<div class="reason-field"><textarea placeholder="Optional remark..." id="remark-${i}" onchange="setRemark(${i},this.value)">${st.remark||''}</textarea></div>`:''}
+        ${needsReason?`<div class="reason-field"><textarea placeholder="${st.status==='partial'?'Reason for partial completion (required)...':'Reason for not completing (required)...'}" id="remark-${i}" onchange="setRemark(${i},this.value)" style="border-color:${st.status==='partial'?'var(--amber)':'var(--red)'};">${st.remark||''}</textarea></div>`:''}
+        ${st.status===''?`<div style="font-size:12px;color:var(--text3);margin-top:6px;">Select a status above</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setStatus(i,status){
+  if(!taskStates[i]) taskStates[i]={status:'',remark:''};
+  taskStates[i].status=status;
+  const st=taskStates[i]; const el=document.getElementById('task-item-'+i);
+  el.className='task-item '+(status==='done'?'t-done':status==='partial'?'t-partial':'t-notdone');
+  el.querySelectorAll('.status-opt').forEach(b=>b.className='status-opt');
+  const btns=el.querySelectorAll('.status-opt');
+  if(status==='done') btns[0].className+=' sel-done';
+  if(status==='partial') btns[1].className+=' sel-partial';
+  if(status==='notdone') btns[2].className+=' sel-notdone';
+  el.querySelectorAll('.reason-field,.task-body > div:last-child').forEach(x=>{ if(x.textContent.includes('Select')||x.classList.contains('reason-field')) x.remove(); });
+  const tb=el.querySelector('.task-body');
+  const rf=document.createElement('div'); rf.className='reason-field';
+  const remarkVal=st.remark||'';
+  if(status==='done'){ rf.innerHTML=`<textarea placeholder="Optional remark..." id="remark-${i}" onchange="setRemark(${i},this.value)">${remarkVal}</textarea>`; tb.appendChild(rf); }
+  else{ rf.innerHTML=`<textarea placeholder="${status==='partial'?'Reason for partial (required)...':'Reason for not done (required)...'}" id="remark-${i}" onchange="setRemark(${i},this.value)" style="border-color:${status==='partial'?'var(--amber)':'var(--red)'};">${remarkVal}</textarea>`; tb.appendChild(rf); }
+  updateDealerProgress();
+}
+
+function setRemark(i,val){ if(!taskStates[i]) taskStates[i]={status:'',remark:''}; taskStates[i].remark=val; }
+
+function updateDealerProgress(){
+  const tasks=getDealerTasks(currentDealer); const total=tasks.length;
+  const done=Object.values(taskStates).filter(t=>t.status!=='').length;
+  const pct=Math.round(done/total*100);
+  const bar=document.getElementById('dealer-progress-bar');
+  if(bar){ bar.style.width=pct+'%'; bar.style.background=pct===100?'var(--green)':pct>=60?'var(--amber)':'var(--red)'; }
+  const badge=document.getElementById('dealer-score-badge'); if(badge) badge.textContent=pct+'%';
+  const ct=document.getElementById('dealer-count-txt'); if(ct) ct.textContent=done+' / '+total;
+}
+
+async function submitChecklist(){
+  const tasks=getDealerTasks(currentDealer);
+  for(let i=0;i<tasks.length;i++){
+    if(!taskStates[i]||!taskStates[i].status){ toast('⚠️ Please select a status for all tasks.','error'); document.getElementById('task-item-'+i).scrollIntoView({behavior:'smooth',block:'center'}); return; }
+    if((taskStates[i].status==='partial'||taskStates[i].status==='notdone')&&!taskStates[i].remark){ toast('⚠️ Please give a reason for "'+tasks[i]+'"','error'); document.getElementById('task-item-'+i).scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  }
+  const doneCount=Object.values(taskStates).filter(t=>t.status==='done').length;
+  const partialCount=Object.values(taskStates).filter(t=>t.status==='partial').length;
+  const notdoneCount=Object.values(taskStates).filter(t=>t.status==='notdone').length;
+  const score=Math.round((doneCount+partialCount*0.5)/tasks.length*100);
+  const submittedAt=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  const subId=Date.now().toString(36);
+  const taskPayload=tasks.map((name,i)=>({name,status:taskStates[i].status,remark:taskStates[i].remark||''}));
+  const submissionData={dealer:currentDealer,date:todayStr(),tasks:taskPayload,score,submittedAt,submissionId:subId};
+  saveLocalSub(currentDealer,todayStr(),submissionData);
+  document.getElementById('sub-info').textContent=currentDealer+' — '+todayDisplay();
+  document.getElementById('sub-done').textContent=doneCount;
+  document.getElementById('sub-partial').textContent=partialCount;
+  document.getElementById('sub-notdone').textContent=notdoneCount;
+  document.getElementById('sub-score').textContent=score+'%';
+  document.getElementById('sub-saving').style.display='block';
+  document.getElementById('sub-saved').style.display='none';
+  document.getElementById('sub-save-err').style.display='none';
+  goTo('page-submitted');
+  try{
+    await githubSubmit(submissionData);
+    document.getElementById('sub-saving').style.display='none';
+    document.getElementById('sub-saved').style.display='block';
+    toast('✅ Saved to GitHub!','success');
+  }catch(e){
+    document.getElementById('sub-saving').style.display='none';
+    const errEl=document.getElementById('sub-save-err'); errEl.style.display='block';
+    errEl.textContent='⚠️ GitHub error: '+e.message+'. Data saved locally.';
+  }
+}
+
+// ══════════════════════════════════════════════════
+// ADMIN LOGIN
+// ══════════════════════════════════════════════════
+async function doAdminLogin(){
+  const pass=document.getElementById('admin-pass-input').value;
+  const hash=await hashPass(pass);
+  if(hash===cfg.adminPassHash){
+    document.getElementById('admin-login-err').style.display='none';
+    document.getElementById('admin-pass-input').value='';
+    initAdminDashboard(); goTo('page-admin');
+  }else{
+    document.getElementById('admin-login-err').style.display='block';
+    document.getElementById('admin-pass-input').value='';
+  }
+}
+function logoutAdmin(){ goTo('page-home'); }
+
+// ══════════════════════════════════════════════════
+// ADMIN NAVIGATION
+// ══════════════════════════════════════════════════
+function showAdminSection(name, btn){
+  ['dashboard','today','history','dealers','tasks','settings'].forEach(s=>{
+    document.getElementById('section-'+s).style.display='none';
+  });
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('section-'+name).style.display='block';
+  btn.classList.add('active');
+  if(name==='history'&&!historyLoaded) loadHistory();
+  if(name==='dealers'&&!historyLoaded) loadHistory();
+  if(name==='tasks') renderTaskManagerInline();
+  if(name==='settings') loadSettingsValues();
+}
+
+// ══════════════════════════════════════════════════
+// ADMIN DASHBOARD
+// ══════════════════════════════════════════════════
+function initAdminDashboard(){
+  renderAdminStats();
+  renderAdminMetrics();
+  renderTodayTable();
+  renderDealerManagementList();
+  const sel=document.getElementById('hist-dealer-filter');
+  sel.innerHTML='<option value="">All Dealers</option>'+getDealers().map(d=>`<option value="${d}">${d}</option>`).join('');
+  const to=todayStr();
+  const from=new Date(Date.now()-30*24*60*60*1000).toISOString().slice(0,10);
+  const minDate=new Date(Date.now()-5*365*24*60*60*1000).toISOString().slice(0,10);
+  const fromEl=document.getElementById('hist-date-from');
+  const toEl=document.getElementById('hist-date-to');
+  fromEl.value=from; fromEl.min=minDate; fromEl.max=to;
+  toEl.value=to; toEl.min=minDate; toEl.max=to;
+}
+
+function renderAdminStats(){
+  const t=todayStr(); const subs=getLocalSubs(); const dealers=getDealers();
+  // Update today badge
+  const todayBadge = document.getElementById('admin-today-badge');
+  if(todayBadge) todayBadge.textContent = todayDisplay();
+  let complete=0,partial=0,notdone=0,pending=0,totalScore=0;
+  dealers.forEach(d=>{
+    const sub=subs[d+'||'+t];
+    if(!sub){pending++;return;}
+    const nd=sub.tasks.filter(t=>t.status==='notdone').length;
+    const pt=sub.tasks.filter(t=>t.status==='partial').length;
+    totalScore+=sub.score;
+    if(nd>0) notdone++; else if(pt>0) partial++; else complete++;
+  });
+  const submitted=dealers.length-pending;
+  const avgScore=submitted>0?Math.round(totalScore/submitted):0;
+
+  document.getElementById('admin-stat-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-card-accent" style="background:var(--green);"></div><div class="stat-card-icon">🟢</div><div class="stat-card-label">All Clear</div><div class="stat-card-val" style="color:var(--green);">${complete}</div><div class="stat-card-sub">${dealers.length} total dealers</div></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:var(--amber);"></div><div class="stat-card-icon">🟡</div><div class="stat-card-label">Partial Issues</div><div class="stat-card-val" style="color:var(--amber);">${partial}</div><div class="stat-card-sub">Have partial tasks</div></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:var(--red);"></div><div class="stat-card-icon">🔴</div><div class="stat-card-label">Has Issues</div><div class="stat-card-val" style="color:var(--red);">${notdone}</div><div class="stat-card-sub">Not done tasks found</div></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:var(--text3);"></div><div class="stat-card-icon">⚪</div><div class="stat-card-label">Pending</div><div class="stat-card-val" style="color:var(--text2);">${pending}</div><div class="stat-card-sub">Yet to submit today</div></div>
+    <div class="stat-card"><div class="stat-card-accent" style="background:var(--accent);"></div><div class="stat-card-icon">📊</div><div class="stat-card-label">Avg Score</div><div class="stat-card-val" style="color:var(--accent);">${avgScore}%</div><div class="stat-card-sub">${submitted} submitted today</div></div>
+  `;
+
+  // Chart: today's scores
+  const chartEl=document.getElementById('chart-today');
+  const maxH=140;
+  const bars=dealers.map(d=>{
+    const sub=subs[d+'||'+t];
+    const score=sub?Math.round(sub.score):0;
+    const h=sub?Math.max(6,Math.round(score/100*maxH)):6;
+    const col=sub?(score>=80?'var(--green)':score>=50?'var(--amber)':'var(--red)'):'var(--surface2)';
+    const dn=d.length>8?d.slice(0,8)+'…':d;
+    return {d,dn,score,h,col,submitted:!!sub};
+  });
+  chartEl.innerHTML=`<div class="chart-bar-row">${bars.map(b=>`<div class="chart-bar" style="height:${b.h}px;background:${b.col};" data-tip="${b.d}: ${b.submitted?b.score+'%':'No submission'}"></div>`).join('')}</div><div class="chart-label-row">${bars.map(b=>`<div class="chart-label">${b.dn}</div>`).join('')}</div>`;
+
+  // Breakdown bars
+  const sTotal=dealers.length;
+  const allTasks=dealers.flatMap(d=>{ const sub=subs[d+'||'+t]; return sub?sub.tasks:[]; });
+  const totalTasks=allTasks.length||1;
+  const doneP=Math.round(allTasks.filter(t=>t.status==='done').length/totalTasks*100);
+  const partP=Math.round(allTasks.filter(t=>t.status==='partial').length/totalTasks*100);
+  const ndP=Math.round(allTasks.filter(t=>t.status==='notdone').length/totalTasks*100);
+  document.getElementById('breakdown-bars').innerHTML=[
+    {label:'Done',pct:doneP,color:'var(--green)'},
+    {label:'Partial',pct:partP,color:'var(--amber)'},
+    {label:'Not Done',pct:ndP,color:'var(--red)'}
+  ].map(b=>`<div style="margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px;"><span style="font-weight:600;color:var(--text2);">${b.label}</span><span style="font-weight:700;font-family:'DM Mono',monospace;color:${b.color};">${b.pct}%</span></div>
+    <div class="progress-wrap" style="height:8px;"><div class="progress-fill" style="width:${b.pct}%;background:${b.color};"></div></div>
+  </div>`).join('');
+
+  // Dealer progress list
+  const listEl=document.getElementById('dealer-progress-list');
+  listEl.innerHTML=dealers.map(d=>{
+    const sub=subs[d+'||'+t];
+    const score=sub?Math.round(sub.score):0;
+    const col=sub?(score>=80?'var(--green)':score>=50?'var(--amber)':'var(--red)'):'var(--text3)';
+    const w=sub?score:0;
+    return `<div class="submission-progress-row">
+      <div class="name" title="${d}">${d}</div>
+      <div class="bar-wrap"><div class="progress-wrap"><div class="progress-fill" style="width:${w}%;background:${col};"></div></div></div>
+      <div class="score-num" style="color:${col};">${sub?score+'%':'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdminMetrics(){
+  const t=todayStr(); const subs=getLocalSubs(); const dealers=getDealers();
+  let complete=0,partial=0,notdone=0,pending=0;
+  dealers.forEach(d=>{
+    const sub=subs[d+'||'+t];
+    if(!sub){pending++;return;}
+    const nd=sub.tasks.filter(t=>t.status==='notdone').length;
+    const pt=sub.tasks.filter(t=>t.status==='partial').length;
+    if(nd>0) notdone++; else if(pt>0) partial++; else complete++;
+  });
+  const avgScore=dealers.reduce((s,d)=>{ const sub=subs[d+'||'+t]; return s+(sub?sub.score:0); },0)/Math.max(dealers.length,1);
+  document.getElementById('admin-metrics').innerHTML=`
+    <div class="metric metric-green"><div class="metric-label">All Clear</div><div class="metric-val" style="color:var(--green)">${complete}</div></div>
+    <div class="metric metric-amber"><div class="metric-label">Partial</div><div class="metric-val" style="color:var(--amber)">${partial}</div></div>
+    <div class="metric metric-red"><div class="metric-label">Issues</div><div class="metric-val" style="color:var(--red)">${notdone}</div></div>
+    <div class="metric"><div class="metric-label">Pending</div><div class="metric-val" style="color:var(--text3)">${pending}</div></div>
+    <div class="metric metric-blue"><div class="metric-label">Avg Score</div><div class="metric-val">${Math.round(avgScore)}%</div></div>
+  `;
+}
+
+// ══════════════════════════════════════════════════
+// TODAY'S TABLE
+// ══════════════════════════════════════════════════
+function setTodayFilter(btn){
+  document.querySelectorAll('#today-filter-pills .pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); todayFilterState=btn.dataset.filter; renderTodayTable();
+}
+function renderTodayTable(){
+  const subs=getLocalSubs(); const search=(document.getElementById('admin-search-today')?.value||'').toLowerCase();
+  const tbody=document.getElementById('today-table-body');
+  let rows=getDealers().map(d=>{
+    const sub=subs[d+'||'+todayStr()];
+    if(!sub) return{dealer:d,status:'pending',done:0,partial:0,notdone:0,score:0,time:'—',sub:null};
+    const done=sub.tasks.filter(t=>t.status==='done').length;
+    const pt=sub.tasks.filter(t=>t.status==='partial').length;
+    const nd=sub.tasks.filter(t=>t.status==='notdone').length;
+    const status=nd>0?'notdone':pt>0?'partial':'complete';
+    return{dealer:d,status,done,partial:pt,notdone:nd,score:sub.score,time:sub.submittedAt,sub};
+  });
+  if(todayFilterState!=='all') rows=rows.filter(r=>r.status===todayFilterState||(todayFilterState==='pending'&&!r.sub));
+  if(search) rows=rows.filter(r=>r.dealer.toLowerCase().includes(search));
+  if(!rows.length){ tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px;">No dealers match filter.</td></tr>`; return; }
+  tbody.innerHTML=rows.map(r=>{
+    const sb=r.sub?`<span class="badge ${r.notdone>0?'badge-red':r.partial>0?'badge-amber':'badge-green'}">${r.notdone>0?'❌ Issues':r.partial>0?'🟡 Partial':'✅ Clear'}</span>`:'<span class="badge badge-gray">⚪ Pending</span>';
+    const sc=scoreColor(r.score);
+    return `<tr><td style="font-weight:700;">${r.dealer}</td><td>${sb}</td><td style="color:var(--green);font-weight:600;">${r.done}</td><td style="color:var(--amber);font-weight:600;">${r.partial}</td><td style="color:var(--red);font-weight:600;">${r.notdone}</td><td style="font-weight:700;color:${sc};">${r.score}%</td><td style="color:var(--text2);">${r.time}</td><td>${r.sub?`<button class="btn btn-sm" onclick='showDetail(${JSON.stringify(r.sub)})'>View</button>`:'—'}</td><td>${r.sub?`<button class="btn btn-sm btn-red" onclick="deleteRecord('${r.dealer.replace(/'/g,"\\'")}','${todayStr()}')" title="Delete permanently">🗑️</button>`:'—'}</td></tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════════
+async function loadHistory(){
+  document.getElementById('hist-loading').style.display='block';
+  document.getElementById('dealer-perf-loading').style.display='block';
+  const from = document.getElementById('hist-date-from')?.value || new Date(Date.now()-30*24*60*60*1000).toISOString().slice(0,10);
+  const to = document.getElementById('hist-date-to')?.value || todayStr();
+  try{
+    allRemoteData = await githubFetchRange(from, to);
+    historyLoaded = true;
+  }catch(e){
+    allRemoteData = buildLocalHistory();
+    historyLoaded = true;
+    toast('⚠️ GitHub fetch failed, showing local data only.','error');
+  }
+  document.getElementById('hist-loading').style.display='none';
+  document.getElementById('dealer-perf-loading').style.display='none';
+  renderHistoryTable(); renderDealerPerf();
+}
+
+async function reloadHistory(){
+  historyLoaded = false;
+  allRemoteData = [];
+  await loadHistory();
+}
+function buildLocalHistory(){
+  const subs=getLocalSubs(); const rows=[];
+  Object.values(subs).forEach(sub=>{ sub.tasks.forEach(task=>{ rows.push({Date:sub.date,Dealer:sub.dealer,Task:task.name,Status:task.status,Remark:task.remark||'',Score:sub.score,SubmittedAt:sub.submittedAt,SubmissionId:sub.submissionId}); }); });
+  return rows;
+}
+function renderHistoryTable(){
+  const from=document.getElementById('hist-date-from')?.value||'';
+  const to=document.getElementById('hist-date-to')?.value||todayStr();
+  const dFilter=document.getElementById('hist-dealer-filter')?.value||'';
+  const tbody=document.getElementById('history-table-body');
+  const subMap={};
+  allRemoteData.forEach(row=>{
+    const key=row.Dealer+'||'+row.Date+'||'+(row.SubmissionId||'');
+    if(!subMap[key]) subMap[key]={date:row.Date,dealer:row.Dealer,tasks:[],score:row.Score,time:row.SubmittedAt};
+    subMap[key].tasks.push({name:row.Task,status:row.Status,remark:row.Remark});
+  });
+  let entries=Object.values(subMap).sort((a,b)=>b.date.localeCompare(a.date));
+  if(from) entries=entries.filter(e=>e.date>=from);
+  if(to) entries=entries.filter(e=>e.date<=to);
+  if(dFilter) entries=entries.filter(e=>e.dealer===dFilter);
+  if(!entries.length){ tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px;">No records found. Try adjusting the date range or click "Load Data".</td></tr>`; return; }
+  tbody.innerHTML=entries.map(e=>{
+    const done=e.tasks.filter(t=>t.status==='done').length;
+    const partial=e.tasks.filter(t=>t.status==='partial').length;
+    const nd=e.tasks.filter(t=>t.status==='notdone').length;
+    const sc=scoreColor(e.score);
+    return `<tr><td>${shortDate(e.date)}</td><td style="font-weight:700;">${e.dealer}</td><td style="color:var(--green);font-weight:600;">${done}</td><td style="color:var(--amber);font-weight:600;">${partial}</td><td style="color:var(--red);font-weight:600;">${nd}</td><td style="font-weight:700;color:${sc};">${Math.round(e.score)}%</td><td style="color:var(--text2);">${e.time||'—'}</td><td><button class="btn btn-sm" onclick='showDetail(${JSON.stringify(e)})'>View</button></td><td><button class="btn btn-sm btn-red" onclick="deleteRecord('${e.dealer.replace(/'/g,"\\'")}','${e.date}')" title="Delete permanently">🗑️</button></td></tr>`;
+  }).join('');
+}
+function renderDealerPerf(){
+  const tbody=document.getElementById('dealers-table-body');
+  const subMap={};
+  allRemoteData.forEach(row=>{
+    const key=row.Dealer+'||'+row.Date;
+    if(!subMap[key]) subMap[key]={dealer:row.Dealer,date:row.Date,score:parseFloat(row.Score)||0};
+  });
+  const dealerMap={};
+  Object.values(subMap).forEach(s=>{
+    if(!dealerMap[s.dealer]) dealerMap[s.dealer]={submissions:[],dates:[]};
+    dealerMap[s.dealer].submissions.push(s.score); dealerMap[s.dealer].dates.push(s.date);
+  });
+  tbody.innerHTML=getDealers().map(d=>{
+    const dm=dealerMap[d];
+    if(!dm) return `<tr><td style="font-weight:700;">${d}</td><td colspan="4" style="color:var(--text3);">No submissions yet</td></tr>`;
+    const avg=Math.round(dm.submissions.reduce((a,b)=>a+b,0)/dm.submissions.length);
+    const sortedDates=dm.dates.sort();
+    const lastDate=sortedDates[sortedDates.length-1];
+    let streak=0; let check=new Date(todayStr());
+    while(true){ const ds=check.toISOString().slice(0,10); if(!sortedDates.includes(ds)) break; streak++; check.setDate(check.getDate()-1); }
+    const sc=scoreColor(avg);
+    return `<tr><td style="font-weight:700;">${d}</td><td>${dm.submissions.length}</td><td style="font-weight:700;color:${sc};">${avg}%</td><td style="color:var(--text2);">${shortDate(lastDate)}</td><td><span class="badge ${streak>=5?'badge-green':streak>=2?'badge-amber':'badge-gray'}">🔥 ${streak}d</span></td></tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// DELETE RECORD (admin)
+// ══════════════════════════════════════════════════
+async function deleteRecord(dealer, date, modalSource){
+  if(!confirm('Permanently delete '+dealer+'\'s record for '+date+'?\nThis removes it from GitHub AND local storage and it will NEVER appear again.')) return;
+  // 1. Remove from local storage
+  const subs = getLocalSubs();
+  delete subs[dealer+'||'+date];
+  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
+  // 2. Remove from GitHub
+  try{
+    const safeName = dealer.replace(/[^a-zA-Z0-9_\- ]/g,'_');
+    const path = 'submissions/'+date+'/'+safeName+'.json';
+    const existing = await ghGetFile(path);
+    if(existing && existing.sha){
+      await ghDeleteFile(path, existing.sha);
+      toast('🗑️ Record deleted from GitHub & local storage.','success');
+    } else {
+      toast('🗑️ Record deleted (not found on GitHub).','');
+    }
+  }catch(e){
+    toast('⚠️ Local deleted; GitHub error: '+e.message,'error');
+  }
+  // 3. Refresh views
+  closeModal('modal-detail');
+  allRemoteData = allRemoteData.filter(r=>!(r.Dealer===dealer && r.Date===date));
+  renderHistoryTable(); renderDealerPerf(); renderAdminStats(); renderAdminMetrics(); renderTodayTable();
+}
+
+// ══════════════════════════════════════════════════
+// DETAIL MODAL
+// ══════════════════════════════════════════════════
+function showDetail(sub){
+  document.getElementById('detail-modal-title').textContent=sub.dealer;
+  document.getElementById('detail-modal-sub').textContent=shortDate(sub.date)+' · Score: '+Math.round(sub.score)+'% · '+(sub.time||sub.submittedAt||'');
+  const tasks=sub.tasks||[];
+  document.getElementById('detail-modal-body').innerHTML=tasks.map(t=>{
+    const icon=t.status==='done'?'✅':t.status==='partial'?'🟡':'❌';
+    const col=t.status==='done'?'var(--green)':t.status==='partial'?'var(--amber)':'var(--red)';
+    return `<div class="detail-task-row">
+      <span class="detail-status-icon">${icon}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:${t.status==='notdone'?'var(--red)':t.status==='partial'?'var(--amber)':'var(--text)'};font-weight:${t.status!=='done'?'600':'400'};">${t.name}</div>
+        ${t.remark?`<div style="font-size:12px;color:var(--text2);margin-top:3px;background:var(--bg3);padding:5px 8px;border-radius:4px;border-left:3px solid ${col};">💬 ${t.remark}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  // Admin delete button
+  const existingDelBtn = document.getElementById('detail-delete-btn');
+  if(existingDelBtn) existingDelBtn.remove();
+  const delBtn = document.createElement('button');
+  delBtn.id = 'detail-delete-btn';
+  delBtn.className = 'btn btn-red btn-sm';
+  delBtn.style.cssText = 'margin-top:16px;width:100%;';
+  delBtn.innerHTML = '🗑️ Delete This Record (GitHub + Local)';
+  delBtn.onclick = ()=>deleteRecord(sub.dealer, sub.date);
+  document.getElementById('detail-modal-body').appendChild(delBtn);
+  document.getElementById('modal-detail').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════
+// DEALER MANAGEMENT
+// ══════════════════════════════════════════════════
+function renderDealerManagementList(){
+  const dealers=getDealers();
+  document.getElementById('dealer-count-badge').textContent=dealers.length+' dealers';
+  const list=document.getElementById('dealer-management-list');
+  const passHashes=cfg.dealerPassHashes||{};
+  list.innerHTML=dealers.map((d,i)=>{
+    const customTasks=cfg.dealerTasks&&cfg.dealerTasks[d]&&cfg.dealerTasks[d].length>0;
+    const hasPass=!!passHashes[d];
+    const initials=d.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="dealer-row-admin">
+      <div class="dealer-avatar">${initials}</div>
+      <div style="flex:1;">
+        <div style="font-size:13.5px;font-weight:700;">${d}</div>
+        <div style="font-size:11px;color:var(--text3);">${customTasks?'Custom tasks':'Global tasks'} · ${hasPass?'Password set':'⚠️ No password'}</div>
+      </div>
+      <span class="badge ${hasPass?'badge-green':'badge-red'}" style="font-size:10px;">${hasPass?'🔐 Protected':'⚠️ No Pass'}</span>
+      <button class="btn btn-sm" onclick="openEditDealer('${d.replace(/'/g,"\\'")}')">✏️ Edit</button>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:20px;color:var(--text3);">No dealers yet. Add one above.</div>';
+}
+
+function openAddDealerModal(){
+  document.getElementById('new-dealer-name').value='';
+  document.getElementById('new-dealer-pass').value='';
+  const tasks=cfg?cfg.tasks:DEFAULT_TASKS;
+  document.getElementById('add-dealer-task-list').innerHTML=tasks.map((t,i)=>`
+    <div class="assign-task-item" id="add-ti-${i}" onclick="toggleAddTask(${i})">
+      <div class="assign-checkbox" id="add-tc-${i}"></div>
+      <span style="font-size:13px;">${t}</span>
+    </div>`).join('');
+  document.getElementById('modal-add-dealer').classList.add('open');
+}
+let addTaskSelected=new Set();
+function toggleAddTask(i){
+  const el=document.getElementById('add-ti-'+i);
+  const cb=document.getElementById('add-tc-'+i);
+  if(addTaskSelected.has(i)){ addTaskSelected.delete(i); el.classList.remove('assigned'); cb.textContent=''; }
+  else{ addTaskSelected.add(i); el.classList.add('assigned'); cb.textContent='✓'; }
+}
+async function confirmAddDealer(){
+  const name=document.getElementById('new-dealer-name').value.trim();
+  const pass=document.getElementById('new-dealer-pass').value;
+  if(!name){ toast('⚠️ Enter a dealer name.','error'); return; }
+  if(!pass){ toast('⚠️ Set a password for this dealer.','error'); return; }
+  if(getDealers().includes(name)){ toast('⚠️ Dealer already exists.','error'); return; }
+  const hash=await hashPass(pass);
+  cfg.dealers.push(name);
+  if(!cfg.dealerTasks) cfg.dealerTasks={};
+  if(!cfg.dealerPassHashes) cfg.dealerPassHashes={};
+  cfg.dealerPassHashes[name]=hash;
+  if(addTaskSelected.size>0){ cfg.dealerTasks[name]=Array.from(addTaskSelected).map(i=>cfg.tasks[i]).filter(Boolean); }
+  saveConfig(cfg); addTaskSelected=new Set();
+  renderDealerManagementList(); populateDealerSelect();
+  closeModal('modal-add-dealer'); toast('✅ Dealer "'+name+'" added!','success');
+}
+
+function openEditDealer(dealer){
+  document.getElementById('edit-dealer-original').value=dealer;
+  document.getElementById('edit-dealer-name').value=dealer;
+  document.getElementById('edit-dealer-pass').value='';
+  const passHashes=cfg.dealerPassHashes||{};
+  document.getElementById('edit-dealer-pass-status').textContent=passHashes[dealer]?'Password is set — enter new value to change it':'⚠️ No password set yet';
+  const tasks=cfg?cfg.tasks:DEFAULT_TASKS;
+  const assigned=cfg.dealerTasks&&cfg.dealerTasks[dealer]?new Set(cfg.dealerTasks[dealer]):new Set();
+  document.getElementById('edit-dealer-task-list').innerHTML=tasks.map((t,i)=>{
+    const isAss=assigned.has(t);
+    return `<div class="assign-task-item ${isAss?'assigned':''}" id="edit-ti-${i}" onclick="toggleEditTask(${i})">
+      <div class="assign-checkbox" id="edit-tc-${i}">${isAss?'✓':''}</div>
+      <span style="font-size:13px;">${t}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('modal-edit-dealer').classList.add('open');
+}
+function toggleEditTask(i){
+  const el=document.getElementById('edit-ti-'+i);
+  const cb=document.getElementById('edit-tc-'+i);
+  if(el.classList.contains('assigned')){ el.classList.remove('assigned'); cb.textContent=''; }
+  else{ el.classList.add('assigned'); cb.textContent='✓'; }
+}
+async function confirmEditDealer(){
+  const original=document.getElementById('edit-dealer-original').value;
+  const newName=document.getElementById('edit-dealer-name').value.trim();
+  const newPass=document.getElementById('edit-dealer-pass').value;
+  if(!newName){ toast('⚠️ Enter a dealer name.','error'); return; }
+  if(newName!==original&&getDealers().includes(newName)){ toast('⚠️ Dealer already exists.','error'); return; }
+  const tasks=cfg?cfg.tasks:[];
+  const selectedTasks=Array.from(document.querySelectorAll('#edit-dealer-task-list .assign-task-item.assigned')).map(el=>{ const idx=parseInt(el.id.replace('edit-ti-','')); return tasks[idx]; }).filter(Boolean);
+  const idx=cfg.dealers.indexOf(original);
+  if(idx>=0) cfg.dealers[idx]=newName;
+  if(!cfg.dealerTasks) cfg.dealerTasks={};
+  if(!cfg.dealerPassHashes) cfg.dealerPassHashes={};
+  if(original!==newName){
+    cfg.dealerTasks[newName]=cfg.dealerTasks[original]||[];
+    delete cfg.dealerTasks[original];
+    cfg.dealerPassHashes[newName]=cfg.dealerPassHashes[original]||'';
+    delete cfg.dealerPassHashes[original];
+  }
+  cfg.dealerTasks[newName]=selectedTasks;
+  if(newPass){ cfg.dealerPassHashes[newName]=await hashPass(newPass); }
+  saveConfig(cfg); renderDealerManagementList(); populateDealerSelect();
+  closeModal('modal-edit-dealer'); toast('✅ Dealer updated!','success');
+}
+function confirmDeleteDealer(){
+  const dealer=document.getElementById('edit-dealer-original').value;
+  if(!confirm('Delete dealer "'+dealer+'"? This cannot be undone.')) return;
+  cfg.dealers=cfg.dealers.filter(d=>d!==dealer);
+  if(cfg.dealerTasks) delete cfg.dealerTasks[dealer];
+  if(cfg.dealerPassHashes) delete cfg.dealerPassHashes[dealer];
+  saveConfig(cfg); renderDealerManagementList(); populateDealerSelect();
+  closeModal('modal-edit-dealer'); toast('🗑️ Dealer "'+dealer+'" removed.','');
+}
+
+// ══════════════════════════════════════════════════
+// TASK MANAGER (inline)
+// ══════════════════════════════════════════════════
+function renderTaskManagerInline(){
+  const list=document.getElementById('task-manager-list-inline');
+  const tasks=cfg.tasks||[];
+  list.innerHTML=tasks.map((t,i)=>`
+    <div class="task-row-admin" id="tmrow-${i}">
+      <span class="drag-handle">⠿</span>
+      <input type="text" value="${t.replace(/"/g,'&quot;')}" id="tmtask-${i}" placeholder="Task name...">
+      <button class="btn btn-icon btn-red btn-sm" onclick="removeTaskInline(${i})" title="Remove">✕</button>
+    </div>`).join('');
+}
+function addNewTask(){
+  const list=document.getElementById('task-manager-list-inline');
+  const i=list.children.length;
+  const div=document.createElement('div');
+  div.className='task-row-admin'; div.id='tmrow-'+i;
+  div.innerHTML=`<span class="drag-handle">⠿</span><input type="text" id="tmtask-${i}" placeholder="Enter new task..."><button class="btn btn-icon btn-red btn-sm" onclick="this.parentElement.remove()" title="Remove">✕</button>`;
+  list.appendChild(div); div.querySelector('input').focus();
+}
+function removeTaskInline(i){ document.getElementById('tmrow-'+i)?.remove(); }
+function saveTasksInline(){
+  const inputs=document.querySelectorAll('#task-manager-list-inline input[type=text]');
+  const tasks=[]; inputs.forEach(inp=>{ const v=inp.value.trim(); if(v) tasks.push(v); });
+  if(tasks.length===0){ toast('⚠️ Add at least one task.','error'); return; }
+  cfg.tasks=tasks; saveConfig(cfg); toast('✅ Tasks saved!','success'); renderTaskManagerInline();
+}
+
+// ══════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════
+function loadSettingsValues(){
+  if(cfg){
+    document.getElementById('set-gh-user').value=cfg.ghUser||'';
+    document.getElementById('set-gh-repo').value=cfg.ghRepo||'';
+    document.getElementById('set-gh-token').value=cfg.ghToken||'';
+  }
+}
+async function updateGithubConfig(){
+  const ghUser=document.getElementById('set-gh-user').value.trim();
+  const ghRepo=document.getElementById('set-gh-repo').value.trim();
+  const ghToken=document.getElementById('set-gh-token').value.trim();
+  if(!ghUser||!ghRepo||!ghToken){ toast('⚠️ Fill in all GitHub fields.','error'); return; }
+  cfg.ghUser=ghUser; cfg.ghRepo=ghRepo; cfg.ghToken=ghToken;
+  saveConfig(cfg); toast('✅ GitHub config updated!','success');
+}
+function clearAllLocalData(){ if(!confirm('Clear all local submissions? This cannot be undone.')) return; localStorage.removeItem(SUBMISSIONS_KEY); toast('🗑️ Local submissions cleared.',''); }
+function resetAll(){ if(!confirm('This will erase ALL config and data. Are you sure?')) return; localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SUBMISSIONS_KEY); location.reload(); }
+
+// ══════════════════════════════════════════════════
+// MODAL CLOSE ON OVERLAY
+// ══════════════════════════════════════════════════
+document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }); });
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+cfg=getConfig();
+if(cfg&&cfg.ghToken&&cfg.adminPassHash){ initApp(); } else { goTo('page-setup'); }
+</script>
+</body>
+</html>
