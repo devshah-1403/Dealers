@@ -1,0 +1,24 @@
+{
+  "dealer": "Tanay",
+  "date": "2026-05-29",
+  "tasks": [
+    {
+      "name": "Voice recording active",
+      "status": "done",
+      "remark": ""
+    },
+    {
+      "name": "Client identity verified before trade",
+      "status": "done",
+      "remark": ""
+    },
+    {
+      "name": "Margin checked before trade execution",
+      "status": "done",
+      "remark": ""
+    }
+  ],
+  "score": 100,
+  "submittedAt": "01:00 pm",
+  "submissionId": "mpqlr9am"
+}
