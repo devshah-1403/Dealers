@@ -1539,8 +1539,32 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('cli
 // ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
-cfg=getConfig();
-if(cfg&&cfg.ghToken&&cfg.adminPassHash){ initApp(); } else { goTo('page-setup'); }
+// ── HARDCODED CONFIG (no setup needed on any PC) ──
+const HARDCODED = {
+  ghUser: 'devshah-1403',
+  ghRepo: 'Dealers',
+  ghToken: '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',
+  adminPassHash: '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358'
+};
+cfg = getConfig();
+if(!cfg || !cfg.ghToken || !cfg.adminPassHash){
+  // First time on this PC — auto-create config from hardcoded values
+  cfg = Object.assign({
+    tasks: [...DEFAULT_TASKS],
+    dealers: ['Dealer 1','Dealer 2','Dealer 3','Dealer 4','Dealer 5','Dealer 6','Dealer 7','Dealer 8','Dealer 9','Dealer 10'],
+    dealerTasks: {},
+    dealerPassHashes: {}
+  }, HARDCODED);
+  saveConfig(cfg);
+} else {
+  // Always keep token/credentials in sync with hardcoded values
+  cfg.ghUser = HARDCODED.ghUser;
+  cfg.ghRepo = HARDCODED.ghRepo;
+  cfg.ghToken = HARDCODED.ghToken;
+  cfg.adminPassHash = HARDCODED.adminPassHash;
+  saveConfig(cfg);
+}
+initApp();
 </script>
 </body>
 </html>
