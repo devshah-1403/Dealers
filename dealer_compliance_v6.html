@@ -446,15 +446,7 @@ code{background:rgba(255,255,255,0.06);padding:1px 7px;border-radius:4px;font-si
 
       <!-- SECTION: DASHBOARD -->
       <div id="section-dashboard">
-        <!-- Sync status banner -->
-        <div id="admin-today-sync-status" style="display:none;align-items:center;gap:10px;background:rgba(88,166,255,0.08);border:1px solid rgba(88,166,255,0.2);border-radius:9px;padding:10px 16px;margin-bottom:16px;font-size:13px;color:#79c0ff;">
-          <span class="spinner"></span>
-          <span>Syncing today's submissions from GitHub…</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <div class="section-title" style="margin-bottom:0;flex:1;">Dashboard — Today's Overview <span id="admin-today-badge" class="badge badge-blue" style="font-size:11px;margin-left:8px;"></span></div>
-          <button class="btn btn-sm" onclick="refreshAdminDashboard()" title="Re-sync from GitHub">🔄 Refresh</button>
-        </div>
+        <div class="section-title" style="margin-bottom:16px;">Dashboard — Today's Overview <span id="admin-today-badge" class="badge badge-blue" style="font-size:11px;margin-left:8px;"></span></div>
         <div class="stat-grid" id="admin-stat-grid"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;" id="dashboard-charts-row">
           <div class="card">
@@ -476,10 +468,7 @@ code{background:rgba(255,255,255,0.06);padding:1px 7px;border-radius:4px;font-si
 
       <!-- SECTION: TODAY -->
       <div id="section-today" style="display:none;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <div class="section-title" style="margin-bottom:0;flex:1;">Today's Report</div>
-          <button class="btn btn-sm" onclick="refreshAdminDashboard()" title="Re-sync from GitHub">🔄 Refresh from GitHub</button>
-        </div>
+        <div class="section-title" style="margin-bottom:16px;">Today's Report</div>
         <div class="metrics" id="admin-metrics"></div>
         <div class="card">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
@@ -1130,48 +1119,11 @@ function showAdminSection(name, btn){
 // ══════════════════════════════════════════════════
 // ADMIN DASHBOARD
 // ══════════════════════════════════════════════════
-
-// Fetch today's submissions from GitHub and merge into localStorage so the
-// admin always sees data regardless of which device the dealer used.
-async function syncTodayFromGitHub(){
-  const today = todayStr();
-  const loadingEl = document.getElementById('admin-today-sync-status');
-  if(loadingEl){ loadingEl.style.display='flex'; }
-  try{
-    const files = await ghListDir('submissions/'+today);
-    const jsonFiles = files.filter(f=>f.name.endsWith('.json'));
-    if(jsonFiles.length === 0){ if(loadingEl) loadingEl.style.display='none'; return; }
-    const results = await Promise.all(jsonFiles.map(async f=>{
-      try{
-        const fileData = await ghGetFile('submissions/'+today+'/'+f.name);
-        if(!fileData) return null;
-        const decoded = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g,''))));
-        return JSON.parse(decoded);
-      }catch(e){ return null; }
-    }));
-    const subs = getLocalSubs();
-    results.forEach(sub=>{
-      if(!sub) return;
-      const key = sub.dealer+'||'+sub.date;
-      // Only update if remote submission is newer or local is missing
-      const existing = subs[key];
-      if(!existing || (sub.submissionId && sub.submissionId > (existing.submissionId||''))){
-        subs[key] = sub;
-      }
-    });
-    localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(subs));
-  }catch(e){
-    console.warn('Today GitHub sync failed:', e.message);
-  }
-  if(loadingEl) loadingEl.style.display='none';
-}
-
-async function initAdminDashboard(){
-  // Show loading state while syncing
-  const syncEl = document.getElementById('admin-today-sync-status');
-  if(syncEl) syncEl.style.display='flex';
-
-  // Populate date pickers and dealer filter first (instant)
+function initAdminDashboard(){
+  renderAdminStats();
+  renderAdminMetrics();
+  renderTodayTable();
+  renderDealerManagementList();
   const sel=document.getElementById('hist-dealer-filter');
   sel.innerHTML='<option value="">All Dealers</option>'+getDealers().map(d=>`<option value="${d}">${d}</option>`).join('');
   const to=todayStr();
@@ -1181,25 +1133,9 @@ async function initAdminDashboard(){
   const toEl=document.getElementById('hist-date-to');
   fromEl.value=from; fromEl.min=minDate; fromEl.max=to;
   toEl.value=to; toEl.min=minDate; toEl.max=to;
-
-  // Fetch today's GitHub submissions first, then render everything
-  await syncTodayFromGitHub();
-  renderAdminStats();
-  renderAdminMetrics();
-  renderTodayTable();
-  renderDealerManagementList();
 }
 
-async function refreshAdminDashboard(){
-  toast('🔄 Syncing from GitHub…','');
-  await syncTodayFromGitHub();
-  renderAdminStats();
-  renderAdminMetrics();
-  renderTodayTable();
-  toast('✅ Dashboard refreshed!','success');
-}
-
-
+function renderAdminStats(){
   const t=todayStr(); const subs=getLocalSubs(); const dealers=getDealers();
   // Update today badge
   const todayBadge = document.getElementById('admin-today-badge');
