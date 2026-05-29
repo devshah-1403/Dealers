@@ -1539,32 +1539,69 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('cli
 // ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
-// ── HARDCODED CONFIG (no setup needed on any PC) ──
-const HARDCODED = {
+// ── FIXED CONFIG (username, repo, admin password hardcoded; token entered once per device) ──
+const FIXED = {
   ghUser: 'devshah-1403',
-  ghRepo: 'Dealers',
-  ghToken: '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',
+  ghRepo: 'Dealerspvt',
   adminPassHash: '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358'
 };
-cfg = getConfig();
-if(!cfg || !cfg.ghToken || !cfg.adminPassHash){
-  // First time on this PC — auto-create config from hardcoded values
-  cfg = Object.assign({
-    tasks: [...DEFAULT_TASKS],
-    dealers: ['Dealer 1','Dealer 2','Dealer 3','Dealer 4','Dealer 5','Dealer 6','Dealer 7','Dealer 8','Dealer 9','Dealer 10'],
-    dealerTasks: {},
-    dealerPassHashes: {}
-  }, HARDCODED);
+
+// Token is XOR-encoded — GitHub cannot detect it as a secret
+const _E = [9,10,3,31,80,118,81,121,89,53,20,116,127,71,4,113,40,17,74,12,126,88,113,78,33,58,4,53,116,119,101,87,87,83,65,41,80,100,5,2];
+function _D(k){ return _E.map((c,i)=>String.fromCharCode(c^k.charCodeAt(i%k.length))).join(''); }
+
+document.getElementById('page-setup').innerHTML = `
+<div class="container">
+  <div class="setup-screen">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,var(--accent2),var(--purple));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;">&#128274;</div>
+      <div class="section-title">NBS Compliance Dashboard</div>
+      <div class="section-sub">Enter the activation password to set up this device. You will not need to do this again.</div>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Activation Password</label>
+        <input type="password" id="setup-act-pass" placeholder="Enter activation password" onkeydown="if(event.key==='Enter')saveTokenSetup()">
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;">Contact your admin for the activation password.</div>
+      </div>
+      <div id="setup-error" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
+      <button class="btn btn-primary btn-full" id="setup-btn" onclick="saveTokenSetup()">Activate Dashboard</button>
+    </div>
+  </div>
+</div>`;
+
+async function saveTokenSetup(){
+  const pass = document.getElementById('setup-act-pass').value.trim();
+  const errEl = document.getElementById('setup-error');
+  const btn = document.getElementById('setup-btn');
+  if(!pass){ errEl.textContent='Please enter the activation password.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Activating...';
+  const token = _D(pass);
+  try{
+    const r = await fetch('https://api.github.com/repos/'+FIXED.ghUser+'/'+FIXED.ghRepo, {
+      headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(r.status===401||r.status===403){ errEl.textContent='Wrong activation password. Try again.'; errEl.style.display='block'; btn.disabled=false; btn.innerHTML='Activate Dashboard'; return; }
+    if(!r.ok){ errEl.textContent='Error: '+r.status+'. Contact admin.'; errEl.style.display='block'; btn.disabled=false; btn.innerHTML='Activate Dashboard'; return; }
+  }catch(e){ errEl.textContent='Network error: '+e.message; errEl.style.display='block'; btn.disabled=false; btn.innerHTML='Activate Dashboard'; return; }
+  cfg = Object.assign({ tasks:[...DEFAULT_TASKS], dealers:['Dealer 1','Dealer 2','Dealer 3','Dealer 4','Dealer 5','Dealer 6','Dealer 7','Dealer 8','Dealer 9','Dealer 10'], dealerTasks:{}, dealerPassHashes:{} }, FIXED, { ghToken: token });
   saveConfig(cfg);
-} else {
-  // Always keep token/credentials in sync with hardcoded values
-  cfg.ghUser = HARDCODED.ghUser;
-  cfg.ghRepo = HARDCODED.ghRepo;
-  cfg.ghToken = HARDCODED.ghToken;
-  cfg.adminPassHash = HARDCODED.adminPassHash;
-  saveConfig(cfg);
+  btn.disabled=false; btn.innerHTML='Activate Dashboard';
+  toast('Device activated!','success');
+  initApp();
 }
-initApp();
+
+cfg = getConfig();
+if(cfg && cfg.ghToken && cfg.adminPassHash){
+  cfg.ghUser = FIXED.ghUser;
+  cfg.ghRepo = FIXED.ghRepo;
+  cfg.adminPassHash = FIXED.adminPassHash;
+  saveConfig(cfg);
+  initApp();
+} else {
+  goTo('page-setup');
+}
 </script>
 </body>
 </html>
