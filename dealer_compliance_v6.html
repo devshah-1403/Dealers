@@ -696,6 +696,29 @@ function shortDate(d){ try{ return new Date(d+'T00:00:00').toLocaleDateString('e
 async function hashPass(pass){ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pass)); return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
 function getConfig(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch{ return null; } }
 function saveConfig(c){ localStorage.setItem(STORAGE_KEY,JSON.stringify(c)); cfg=c; }
+async function saveConfigToGitHub(c){
+  saveConfig(c);
+  try{
+    const path='config/dashboard_config.json';
+    const existing=await ghGetFile(path);
+    await ghPutFile(path, c, existing?existing.sha:null);
+  }catch(e){ console.warn('Config GitHub save failed:',e.message); }
+}
+async function loadConfigFromGitHub(){
+  try{
+    const path='config/dashboard_config.json';
+    const file=await ghGetFile(path);
+    if(file && file.content){
+      const remote=JSON.parse(atob(file.content.split('\n').join('')));
+      // Merge: keep local token, use remote for everything else
+      const token=cfg.ghToken;
+      cfg=Object.assign({},remote,{ghToken:token,ghUser:FIXED.ghUser,ghRepo:FIXED.ghRepo,adminPassHash:FIXED.adminPassHash});
+      saveConfig(cfg);
+      return true;
+    }
+  }catch(e){ console.warn('Config load from GitHub failed:',e.message); }
+  return false;
+}
 function getLocalSubs(){ try{ return JSON.parse(localStorage.getItem(SUBMISSIONS_KEY)||'{}'); }catch{ return {}; } }
 function saveLocalSub(dealer,date,data){ const s=getLocalSubs(); s[dealer+'||'+date]=data; localStorage.setItem(SUBMISSIONS_KEY,JSON.stringify(s)); }
 function getLocalSub(dealer,date){ return getLocalSubs()[dealer+'||'+date]||null; }
@@ -889,14 +912,18 @@ function scheduleMidnightReset(){
 // ══════════════════════════════════════════════════
 // HOME / DEALER LOGIN
 // ══════════════════════════════════════════════════
-function initApp(){
+async function initApp(){
   checkDailyReset();
   scheduleMidnightReset();
   cfg=getConfig();
+  // Show loading while fetching latest config from GitHub
+  goTo('page-home');
   document.getElementById('greeting-time').textContent=greeting();
   document.getElementById('home-date-badge').textContent=todayDisplay();
   populateDealerSelect();
-  goTo('page-home');
+  // Sync config from GitHub in background
+  const synced = await loadConfigFromGitHub();
+  if(synced){ populateDealerSelect(); }
 }
 
 function populateDealerSelect(){
@@ -1420,7 +1447,7 @@ async function confirmAddDealer(){
   if(!cfg.dealerPassHashes) cfg.dealerPassHashes={};
   cfg.dealerPassHashes[name]=hash;
   if(addTaskSelected.size>0){ cfg.dealerTasks[name]=Array.from(addTaskSelected).map(i=>cfg.tasks[i]).filter(Boolean); }
-  saveConfig(cfg); addTaskSelected=new Set();
+  await saveConfigToGitHub(cfg); addTaskSelected=new Set();
   renderDealerManagementList(); populateDealerSelect();
   closeModal('modal-add-dealer'); toast('✅ Dealer "'+name+'" added!','success');
 }
@@ -1468,16 +1495,16 @@ async function confirmEditDealer(){
   }
   cfg.dealerTasks[newName]=selectedTasks;
   if(newPass){ cfg.dealerPassHashes[newName]=await hashPass(newPass); }
-  saveConfig(cfg); renderDealerManagementList(); populateDealerSelect();
+  await saveConfigToGitHub(cfg); renderDealerManagementList(); populateDealerSelect();
   closeModal('modal-edit-dealer'); toast('✅ Dealer updated!','success');
 }
-function confirmDeleteDealer(){
+async function confirmDeleteDealer(){
   const dealer=document.getElementById('edit-dealer-original').value;
   if(!confirm('Delete dealer "'+dealer+'"? This cannot be undone.')) return;
   cfg.dealers=cfg.dealers.filter(d=>d!==dealer);
   if(cfg.dealerTasks) delete cfg.dealerTasks[dealer];
   if(cfg.dealerPassHashes) delete cfg.dealerPassHashes[dealer];
-  saveConfig(cfg); renderDealerManagementList(); populateDealerSelect();
+  await saveConfigToGitHub(cfg); renderDealerManagementList(); populateDealerSelect();
   closeModal('modal-edit-dealer'); toast('🗑️ Dealer "'+dealer+'" removed.','');
 }
 
@@ -1503,11 +1530,11 @@ function addNewTask(){
   list.appendChild(div); div.querySelector('input').focus();
 }
 function removeTaskInline(i){ document.getElementById('tmrow-'+i)?.remove(); }
-function saveTasksInline(){
+async function saveTasksInline(){
   const inputs=document.querySelectorAll('#task-manager-list-inline input[type=text]');
   const tasks=[]; inputs.forEach(inp=>{ const v=inp.value.trim(); if(v) tasks.push(v); });
   if(tasks.length===0){ toast('⚠️ Add at least one task.','error'); return; }
-  cfg.tasks=tasks; saveConfig(cfg); toast('✅ Tasks saved!','success'); renderTaskManagerInline();
+  cfg.tasks=tasks; await saveConfigToGitHub(cfg); toast('✅ Tasks saved!','success'); renderTaskManagerInline();
 }
 
 // ══════════════════════════════════════════════════
@@ -1526,7 +1553,7 @@ async function updateGithubConfig(){
   const ghToken=document.getElementById('set-gh-token').value.trim();
   if(!ghUser||!ghRepo||!ghToken){ toast('⚠️ Fill in all GitHub fields.','error'); return; }
   cfg.ghUser=ghUser; cfg.ghRepo=ghRepo; cfg.ghToken=ghToken;
-  saveConfig(cfg); toast('✅ GitHub config updated!','success');
+  saveConfig(cfg); toast('✅ GitHub config updated!','success'); // token update stays local only
 }
 function clearAllLocalData(){ if(!confirm('Clear all local submissions? This cannot be undone.')) return; localStorage.removeItem(SUBMISSIONS_KEY); toast('🗑️ Local submissions cleared.',''); }
 function resetAll(){ if(!confirm('This will erase ALL config and data. Are you sure?')) return; localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SUBMISSIONS_KEY); location.reload(); }
